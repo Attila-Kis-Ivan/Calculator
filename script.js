@@ -2,65 +2,82 @@ const calculatorDisplay = document.querySelector('h1');
 const inputBtns = document.querySelectorAll('button');
 const clearBtn = document.getElementById('clear-btn');
 
-
 let firstValue = 0;
 let operatorValue = '';
 let awaitingNextValue = false;
 
 function sendNumberValue(number) {
-// Replace the current display value if ifrst value is entered
-if(awaitingNextValue) {
+  // Replace current display value if first value is entered
+  if (awaitingNextValue) {
     calculatorDisplay.textContent = number;
     awaitingNextValue = false;
-}else {
-    // if the curren t display value is 0 replace it if not add number
+  } else {
+    // If current display value is 0, replace it, if not add number to display value
     const displayValue = calculatorDisplay.textContent;
     calculatorDisplay.textContent = displayValue === '0' ? number : displayValue + number;
-}
+  }
 }
 
 function addDecimal() {
-    //if operator pressed do not add decimal
-    if(awaitingNextValue = ture) return;
-    // if no decimal, add one
-    if(!calculatorDisplay.textContent.includes('.') ) {
-        calculatorDisplay.textContent = `${calculatorDisplay.textContent}.`;
-    }
+  // If operator pressed, don't add decimal
+  if (awaitingNextValue) return;
+  // If no decimal, add one
+  if (!calculatorDisplay.textContent.includes('.')) {
+    calculatorDisplay.textContent = `${calculatorDisplay.textContent}.`;
+  }
 }
+
+// Calculate first and second values depending on operator
+const calculate = {
+  '/': (firstNumber, secondNumber) => firstNumber / secondNumber,
+
+  '*': (firstNumber, secondNumber) => firstNumber * secondNumber,
+
+  '+': (firstNumber, secondNumber) => firstNumber + secondNumber,
+
+  '-': (firstNumber, secondNumber) => firstNumber - secondNumber,
+
+  '=': (firstNumber, secondNumber) => secondNumber,
+};
 
 function useOperator(operator) {
-    const currentValue = Number(calculatorDisplay.textContent);
-    // ASsign firstValue if no value
-    if(!firstValue) {
-        firstValue = currentValue;
-    } else {
-        console.log('currenvalue', currentValue);
-    }
-    // ready for the next value, store operatot
-    awaitingNextValue = true;
+  const currentValue = Number(calculatorDisplay.textContent);
+  // Prevent multiple operators
+  if (operatorValue && awaitingNextValue) {
     operatorValue = operator;
-    console.log('first value', firstValue);
-    console.log('operator', operatorValue);
+    return;
+  }
+  // Assign firstValue if no value
+  if (!firstValue) {
+    firstValue = currentValue;
+  } else {
+    const calculation = calculate[operatorValue](firstValue, currentValue);
+    calculatorDisplay.textContent = calculation;
+    firstValue = calculation;
+  }
+  // Ready for next value, store operator
+  awaitingNextValue = true;
+  operatorValue = operator;
 }
 
-// add event lsiteners for number operators and decimal buttons
+// Add Event Listeners for numbers, operators, decimal
 inputBtns.forEach((inputBtn) => {
-    if(inputBtn.classList.length === 0) {
-        inputBtn.addEventListener('click', () => sendNumberValue(inputBtn.value));
-    } else if (inputBtn.classList.contains('operator')) {
-        inputBtn.addEventListener('click', () => useOperator(inputBtn.value));
-    } else if (inputBtn.classList.contains('decimal')) {
-        inputBtn.addEventListener('click', () => addDecimal());
-    } 
+  if (inputBtn.classList.length === 0) {
+    inputBtn.addEventListener('click', () => sendNumberValue(inputBtn.value));
+  } else if (inputBtn.classList.contains('operator')) {
+    inputBtn.addEventListener('click', () => useOperator(inputBtn.value));
+  } else if (inputBtn.classList.contains('decimal')) {
+    inputBtn.addEventListener('click', () => addDecimal());
+  }
 });
 
-// reset  all values ,display
+// Reset all values, display
 function resetAll() {
-    firstValue = 0;
-    operatorValue = '';
-    awaitingNextValue = false;
-    calculatorDisplay.textContent = '0';
+  firstValue = 0;
+  operatorValue = '';
+  awaitingNextValue = false;
+  calculatorDisplay.textContent = '0';
 }
 
-//Event listener
-clearBtn. addEventListener('click', resetAll);
+// Event Listener
+clearBtn.addEventListener('click', resetAll);
